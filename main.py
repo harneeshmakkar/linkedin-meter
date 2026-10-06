@@ -1,5 +1,14 @@
-from rich import print
+from dotenv import load_dotenv
+load_dotenv()
 
-print("[bold green]Hello AI Engineer![/bold green]")
+import os
+from openai import OpenAI
 
-print("[bold blue]LinkedIn Bullshit Meter[/bold blue]")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+response = client.responses.create(
+    model="gpt-5.6-luna",
+    input="Explain what an API is in one simple sentence."
+)
+
+print(response.output_text)
