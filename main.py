@@ -9,6 +9,13 @@ from pydantic import BaseModel
 class BullshitAnalysis(BaseModel):
     score: int
     category: str
+
+    vagueness: int
+    exaggeration: int
+    jargon: int
+    evidence_gap: int
+    filler: int
+
     reasons: list[str]
     suspicious_phrases: list[str]
 
@@ -17,22 +24,79 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def analyze_post(post: str) -> BullshitAnalysis:
-    """
-    Analyze a LinkedIn post for signs of exaggerated or generic content.
-    """
 
     response = client.responses.parse(
         model="gpt-5.6-luna",
         input=f"""
-        Analyze this text as a LinkedIn bullshit detector.
+        You are a LinkedIn Bullshit Meter.
 
-        Text:
+        Your job is to estimate how much rhetorical hype, vagueness, and
+        low-information language exists in a LinkedIn post.
+
+        Evaluate the post using these five dimensions.
+
+        1. Vagueness (0-20)
+        How vague are the claims?
+        0 = highly specific and concrete
+        20 = almost entirely vague
+
+        2. Exaggeration (0-20)
+        How inflated or over-the-top is the language?
+        0 = neutral and proportional
+        20 = extreme hype and exaggeration
+
+        3. Corporate jargon (0-20)
+        How much does the post rely on impressive-sounding but
+        low-information corporate language?
+        0 = clear, natural language
+        20 = heavily dependent on corporate buzzwords
+
+        4. Evidence gap (0-20)
+        How much are important claims unsupported by numbers,
+        examples, outcomes, or other concrete evidence?
+        0 = claims are well supported
+        20 = major claims have almost no supporting evidence
+
+        5. Filler / self-congratulation (0-20)
+        How much of the post consists of emotional, inspirational,
+        or self-congratulatory language rather than useful information?
+        0 = almost no filler
+        20 = mostly filler
+
+        The overall bullshit score MUST be the sum of the five
+        dimension scores and therefore range from 0 to 100.
+
+        Use these overall categories:
+
+        0-20: Substantive
+        21-40: Mostly substantive
+        41-60: Mixed
+        61-80: High bullshit
+        81-100: Maximum LinkedIn
+
+        Important:
+        Do not punish a post simply because it is positive or enthusiastic.
+        Concrete achievements supported by specific numbers, outcomes,
+        customers, examples, or evidence should reduce the bullshit score.
+
+        Analyze the following LinkedIn post:
+
         {post}
         """,
         text_format=BullshitAnalysis,
     )
 
-    return response.output_parsed
+    result = response.output_parsed
+
+    result.score = (
+        result.vagueness
+        + result.exaggeration
+        + result.jargon
+        + result.evidence_gap
+        + result.filler
+    )
+
+    return result
 
 
 post = """
@@ -49,10 +113,17 @@ analysis = analyze_post(post)
 print(f"Score: {analysis.score}/100")
 print(f"Category: {analysis.category}")
 
+print("\nDimension scores:")
+print(f"- Vagueness: {analysis.vagueness}/20")
+print(f"- Exaggeration: {analysis.exaggeration}/20")
+print(f"- Corporate jargon: {analysis.jargon}/20")
+print(f"- Evidence gap: {analysis.evidence_gap}/20")
+print(f"- Filler / self-congratulation: {analysis.filler}/20")
+
 print("\nReasons:")
 for reason in analysis.reasons:
     print(f"- {reason}")
 
 print("\nSuspicious phrases:")
 for phrase in analysis.suspicious_phrases:
-    print(f"- {phrase}") 
+    print(f"- {phrase}")
