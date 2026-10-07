@@ -99,12 +99,7 @@ def analyze_post(post: str) -> BullshitAnalysis:
     return result
 
 
-post = """
-I am incredibly humbled and excited to announce that
-after countless late nights, our amazing team has achieved
-a truly revolutionary milestone. This is just the beginning
-of our journey to change the world.
-"""
+post = input("Paste a LinkedIn post to analyze:\n\n")
 
 
 analysis = analyze_post(post)
