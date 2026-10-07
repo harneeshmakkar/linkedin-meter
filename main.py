@@ -55,4 +55,4 @@ for reason in analysis.reasons:
 
 print("\nSuspicious phrases:")
 for phrase in analysis.suspicious_phrases:
-    print(f"- {phrase}")
+    print(f"- {phrase}") 
