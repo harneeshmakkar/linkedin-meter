@@ -3,18 +3,18 @@ load_dotenv()
 
 import os
 from openai import OpenAI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class BullshitAnalysis(BaseModel):
-    score: int
+    score: int = Field(ge=0, le=100)
     category: str
 
-    vagueness: int
-    exaggeration: int
-    jargon: int
-    evidence_gap: int
-    filler: int
+    vagueness: int = Field(ge=0, le=20)
+    exaggeration: int = Field(ge=0, le=20)
+    jargon: int = Field(ge=0, le=20)
+    evidence_gap: int = Field(ge=0, le=20)
+    filler: int = Field(ge=0, le=20)
 
     reasons: list[str]
     suspicious_phrases: list[str]
@@ -98,8 +98,23 @@ def analyze_post(post: str) -> BullshitAnalysis:
 
     return result
 
+def get_post_from_user() -> str:
+    print("Paste a LinkedIn post below.")
+    print("When finished, type DONE on a new line.\n")
 
-post = input("Paste a LinkedIn post to analyze:\n\n")
+    lines = []
+
+    while True:
+        line = input()
+
+        if line.strip().upper() == "DONE":
+            break
+
+        lines.append(line)
+
+    return "\n".join(lines)
+
+post = get_post_from_user()
 
 
 analysis = analyze_post(post)
