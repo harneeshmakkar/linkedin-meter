@@ -16,22 +16,35 @@ class BullshitAnalysis(BaseModel):
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-response = client.responses.parse(
-    model="gpt-5.6-luna",
-    input="""
-    Analyze this text as a LinkedIn bullshit detector.
+def analyze_post(post: str) -> BullshitAnalysis:
+    """
+    Analyze a LinkedIn post for signs of exaggerated or generic content.
+    """
 
-    Text:
-    "I am incredibly humbled and excited to announce that
-    after countless late nights, our amazing team has achieved
-    a truly revolutionary milestone. This is just the beginning
-    of our journey to change the world."
-    """,
-    text_format=BullshitAnalysis,
-)
+    response = client.responses.parse(
+        model="gpt-5.6-luna",
+        input=f"""
+        Analyze this text as a LinkedIn bullshit detector.
+
+        Text:
+        {post}
+        """,
+        text_format=BullshitAnalysis,
+    )
+
+    return response.output_parsed
 
 
-analysis = response.output_parsed
+post = """
+I am incredibly humbled and excited to announce that
+after countless late nights, our amazing team has achieved
+a truly revolutionary milestone. This is just the beginning
+of our journey to change the world.
+"""
+
+
+analysis = analyze_post(post)
+
 
 print(f"Score: {analysis.score}/100")
 print(f"Category: {analysis.category}")
