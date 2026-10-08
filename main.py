@@ -23,6 +23,15 @@ class BullshitAnalysis(BaseModel):
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
+def calculate_score(result: BullshitAnalysis) -> int:
+    return (
+        result.vagueness
+        + result.exaggeration
+        + result.jargon
+        + result.evidence_gap
+        + result.filler
+    )
+
 def analyze_post(post: str) -> BullshitAnalysis:
 
     response = client.responses.parse(
@@ -88,13 +97,7 @@ def analyze_post(post: str) -> BullshitAnalysis:
 
     result = response.output_parsed
 
-    result.score = (
-        result.vagueness
-        + result.exaggeration
-        + result.jargon
-        + result.evidence_gap
-        + result.filler
-    )
+    result.score = calculate_score(result)
 
     return result
 
