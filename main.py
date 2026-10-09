@@ -123,29 +123,67 @@ def get_post_from_user() -> str:
 
     return "\n".join(lines)
 
-post = get_post_from_user()
 
 
-analysis = analyze_post(post)
+test_posts = [
+    """
+    We reduced our customer support response time from 18 hours
+    to 4 hours over the last six months.
 
-if analysis is None:
-    print("Unable to analyze the post. Please try again.")
+    We did this by introducing automated ticket routing and
+    restructuring our support workflow.
 
-else:
+    Customer satisfaction increased from 82% to 91%.
+    """,
+
+    """
+    I am incredibly humbled and excited to announce that after
+    countless late nights, our amazing team has achieved a truly
+    revolutionary milestone.
+
+    This is just the beginning of our journey to change the world.
+    """,
+
+    """
+    I'm proud to share that our team has launched our new analytics platform
+    after eight months of development.
+
+    The platform is now being used by 27 customers and has reduced their
+    weekly reporting time by an average of 35%.
+
+    A big thank you to the engineering, product, and customer success teams
+    who made this possible. We're excited to keep improving it based on
+    customer feedback.
+    """,
+
+    """
+    Today we are thrilled to announce a transformative milestone
+    in our mission to redefine the future of business.
+
+    Through relentless innovation and cross-functional collaboration,
+    we have unlocked a new era of operational excellence.
+
+    Our platform is empowering organizations to move faster,
+    think bigger, and create unprecedented value at scale.
+
+    This is only the beginning.
+    """
+]
+
+
+for post in test_posts:
+    analysis = analyze_post(post)
+
+    if analysis is None:
+        print("Unable to analyze this post.")
+        continue
+
+    print("\n" + "=" * 60)
     print(f"Score: {analysis.score}/100")
     print(f"Category: {analysis.category}")
-    
-    print("\nDimension scores:")
-    print(f"- Vagueness: {analysis.vagueness}/20")
-    print(f"- Exaggeration: {analysis.exaggeration}/20")
-    print(f"- Corporate jargon: {analysis.jargon}/20")
-    print(f"- Evidence gap: {analysis.evidence_gap}/20")
-    print(f"- Filler / self-congratulation: {analysis.filler}/20")
-    
-    print("\nReasons:")
-    for reason in analysis.reasons:
-        print(f"- {reason}")
 
-    print("\nSuspicious phrases:")
-    for phrase in analysis.suspicious_phrases:
-        print(f"- {phrase}")
+    print(f"Vagueness: {analysis.vagueness}/20")
+    print(f"Exaggeration: {analysis.exaggeration}/20")
+    print(f"Corporate jargon: {analysis.jargon}/20")
+    print(f"Evidence gap: {analysis.evidence_gap}/20")
+    print(f"Filler: {analysis.filler}/20")
