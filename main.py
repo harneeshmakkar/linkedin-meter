@@ -6,11 +6,11 @@ from openai import OpenAI, APIError
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from evaluation import evaluation_dataset
+from prompts import build_analysis_prompt
 
 class BullshitAnalysis(BaseModel):
-    score: int = Field(ge=0, le=100)
-    category: str
-
+    
     vagueness: int = Field(ge=0, le=20)
     exaggeration: int = Field(ge=0, le=20)
     jargon: int = Field(ge=0, le=20)
@@ -33,122 +33,28 @@ def calculate_score(result: BullshitAnalysis) -> int:
         + result.filler
     )
 
-def analyze_post(post: str) -> Optional[BullshitAnalysis]:
+
+def calculate_category(score: int) -> str:
+    if score <= 20:
+        return "Substantive"
+    elif score <= 40:
+        return "Mostly substantive"
+    elif score <= 60:
+        return "Mixed"
+    elif score <= 80:
+        return "High bullshit"
+    else:
+        return "Maximum LinkedIn"
+
+def analyze_post(post: str):
 
     try:
+
+        prompt = build_analysis_prompt
+
         response = client.responses.parse(
             model="gpt-5.6-luna",
-            input=f"""
-            You are a LinkedIn Bullshit Meter.
-
-            Your job is to estimate how much rhetorical hype, vagueness, and
-            low-information language exists in a LinkedIn post.
-
-            Evaluate the post using these five dimensions.
-
-            1. Vagueness (0-20)
-            How vague are the claims?
-            0 = highly specific and concrete
-            20 = almost entirely vague
-
-            2. Exaggeration (0-20)
-            How inflated or over-the-top is the language?
-            0 = neutral and proportional
-            20 = extreme hype and exaggeration
-
-            3. Corporate jargon (0-20)
-            How much does the post rely on impressive-sounding but
-            low-information corporate language?
-            0 = clear, natural language
-            20 = heavily dependent on corporate buzzwords
-
-            4. Evidence gap (0-20)
-            How much are important claims unsupported by numbers,
-            examples, outcomes, or other concrete evidence?
-            0 = claims are well supported
-            20 = major claims have almost no supporting evidence
-
-            5. Filler / self-congratulation (0-20)
-            How much of the post consists of emotional, inspirational,
-            or self-congratulatory language rather than useful information?
-            0 = almost no filler
-            20 = mostly filler
-
-            The overall bullshit score MUST be the sum of the five
-            dimension scores and therefore range from 0 to 100.
-
-            Use these overall categories:
-
-            0-20: Substantive
-            21-40: Mostly substantive
-            41-60: Mixed
-            61-80: High bullshit
-            81-100: Maximum LinkedIn
-
-            Important:
-            Do not punish a post simply because it is positive or enthusiastic.
-            Concrete achievements supported by specific numbers, outcomes,
-            customers, examples, or evidence should reduce the bullshit score.
-
-            Use the following examples to calibrate your scoring:
-
-            Example 1 — Substantive post:
-
-            Post:
-            "We reduced our customer support response time from 18 hours
-            to 4 hours over the last six months.
-
-            We did this by introducing automated ticket routing and
-            restructuring our support workflow.
-
-            Customer satisfaction increased from 82% to 91%."
-
-            Expected evaluation:
-            Low bullshit score because the post contains specific actions,
-            measurable results, and concrete evidence.
-
-
-            Example 2 — Maximum LinkedIn:
-
-            Post:
-            "Today we are thrilled to announce a transformative milestone
-            in our mission to redefine the future of business.
-
-            Through relentless innovation and cross-functional collaboration,
-            we have unlocked a new era of operational excellence.
-
-            Our platform is empowering organizations to move faster,
-            think bigger, and create unprecedented value at scale.
-
-            This is only the beginning."
-
-            Expected evaluation:
-            Very high bullshit score because the post relies heavily on
-            vague claims, corporate jargon, hype, and unsupported statements.
-
-
-            Example 3 — Evidence-based promotional post:
-
-            Post:
-            "I'm proud to share that our team has launched our new analytics
-            platform after eight months of development.
-
-            The platform is now being used by 27 customers and has reduced
-            their weekly reporting time by an average of 35%.
-
-            A big thank you to the engineering, product, and customer success
-            teams who made this possible."
-
-            Expected evaluation:
-            Relatively low bullshit score because although the post is
-            promotional and celebratory, it contains specific evidence,
-            measurable outcomes, and concrete information.
-
-
-            Now analyze the following LinkedIn post:
-
-            {post}
-            """,
+            input=prompt,
             text_format=BullshitAnalysis,
         )
 
@@ -158,9 +64,10 @@ def analyze_post(post: str) -> Optional[BullshitAnalysis]:
 
     result = response.output_parsed
 
-    result.score = calculate_score(result)
+    score = calculate_score(result)
+    category = calculate_category(score)
 
-    return result
+    return result, score, category
 
 def get_post_from_user() -> str:
     print("Paste a LinkedIn post below.")
@@ -180,65 +87,49 @@ def get_post_from_user() -> str:
 
 
 
-test_posts = [
-    """
-    We reduced our customer support response time from 18 hours
-    to 4 hours over the last six months.
+passed_count = 0
+failed_count = 0
 
-    We did this by introducing automated ticket routing and
-    restructuring our support workflow.
-
-    Customer satisfaction increased from 82% to 91%.
-    """,
-
-    """
-    I am incredibly humbled and excited to announce that after
-    countless late nights, our amazing team has achieved a truly
-    revolutionary milestone.
-
-    This is just the beginning of our journey to change the world.
-    """,
-
-    """
-    I'm proud to share that our team has launched our new analytics platform
-    after eight months of development.
-
-    The platform is now being used by 27 customers and has reduced their
-    weekly reporting time by an average of 35%.
-
-    A big thank you to the engineering, product, and customer success teams
-    who made this possible. We're excited to keep improving it based on
-    customer feedback.
-    """,
-
-    """
-    Today we are thrilled to announce a transformative milestone
-    in our mission to redefine the future of business.
-
-    Through relentless innovation and cross-functional collaboration,
-    we have unlocked a new era of operational excellence.
-
-    Our platform is empowering organizations to move faster,
-    think bigger, and create unprecedented value at scale.
-
-    This is only the beginning.
-    """
-]
-
-
-for post in test_posts:
-    analysis = analyze_post(post)
+for test in evaluation_dataset:
+    analysis = analyze_post(test["post"])
 
     if analysis is None:
+        print(f"\n{test['name']}")
         print("Unable to analyze this post.")
+        failed_count += 1
         continue
 
-    print("\n" + "=" * 60)
-    print(f"Score: {analysis.score}/100")
-    print(f"Category: {analysis.category}")
+    result, score, category = analysis
 
-    print(f"Vagueness: {analysis.vagueness}/20")
-    print(f"Exaggeration: {analysis.exaggeration}/20")
-    print(f"Corporate jargon: {analysis.jargon}/20")
-    print(f"Evidence gap: {analysis.evidence_gap}/20")
-    print(f"Filler: {analysis.filler}/20")
+    passed = (
+        test["expected_min"]
+        <= score
+        <= test["expected_max"]
+    )
+
+    print("\n" + "=" * 60)
+    print(f"Test: {test['name']}")
+    print(f"Actual score: {score}/100")
+    print(
+        f"Expected range: "
+        f"{test['expected_min']}-{test['expected_max']}"
+    )
+    print(f"Category: {category}")
+
+    if passed:
+        print("Result: PASS")
+        passed_count += 1
+    else:
+        print("Result: FAIL")
+        failed_count += 1
+
+
+total_tests = passed_count + failed_count
+pass_rate = (passed_count / total_tests) * 100
+
+print("\n" + "=" * 60)
+print("Evaluation Summary")
+print(f"Total tests: {total_tests}")
+print(f"Passed: {passed_count}")
+print(f"Failed: {failed_count}")
+print(f"Pass rate: {pass_rate:.1f}%")
