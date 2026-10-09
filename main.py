@@ -90,7 +90,62 @@ def analyze_post(post: str) -> Optional[BullshitAnalysis]:
             Concrete achievements supported by specific numbers, outcomes,
             customers, examples, or evidence should reduce the bullshit score.
 
-            Analyze the following LinkedIn post:
+            Use the following examples to calibrate your scoring:
+
+            Example 1 — Substantive post:
+
+            Post:
+            "We reduced our customer support response time from 18 hours
+            to 4 hours over the last six months.
+
+            We did this by introducing automated ticket routing and
+            restructuring our support workflow.
+
+            Customer satisfaction increased from 82% to 91%."
+
+            Expected evaluation:
+            Low bullshit score because the post contains specific actions,
+            measurable results, and concrete evidence.
+
+
+            Example 2 — Maximum LinkedIn:
+
+            Post:
+            "Today we are thrilled to announce a transformative milestone
+            in our mission to redefine the future of business.
+
+            Through relentless innovation and cross-functional collaboration,
+            we have unlocked a new era of operational excellence.
+
+            Our platform is empowering organizations to move faster,
+            think bigger, and create unprecedented value at scale.
+
+            This is only the beginning."
+
+            Expected evaluation:
+            Very high bullshit score because the post relies heavily on
+            vague claims, corporate jargon, hype, and unsupported statements.
+
+
+            Example 3 — Evidence-based promotional post:
+
+            Post:
+            "I'm proud to share that our team has launched our new analytics
+            platform after eight months of development.
+
+            The platform is now being used by 27 customers and has reduced
+            their weekly reporting time by an average of 35%.
+
+            A big thank you to the engineering, product, and customer success
+            teams who made this possible."
+
+            Expected evaluation:
+            Relatively low bullshit score because although the post is
+            promotional and celebratory, it contains specific evidence,
+            measurable outcomes, and concrete information.
+
+
+            Now analyze the following LinkedIn post:
 
             {post}
             """,
