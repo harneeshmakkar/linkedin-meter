@@ -2,8 +2,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-from openai import OpenAI
+from openai import OpenAI, APIError
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class BullshitAnalysis(BaseModel):
@@ -32,68 +33,73 @@ def calculate_score(result: BullshitAnalysis) -> int:
         + result.filler
     )
 
-def analyze_post(post: str) -> BullshitAnalysis:
+def analyze_post(post: str) -> Optional[BullshitAnalysis]:
 
-    response = client.responses.parse(
-        model="gpt-5.6-luna",
-        input=f"""
-        You are a LinkedIn Bullshit Meter.
+    try:
+        response = client.responses.parse(
+            model="gpt-5.6-luna",
+            input=f"""
+            You are a LinkedIn Bullshit Meter.
 
-        Your job is to estimate how much rhetorical hype, vagueness, and
-        low-information language exists in a LinkedIn post.
+            Your job is to estimate how much rhetorical hype, vagueness, and
+            low-information language exists in a LinkedIn post.
 
-        Evaluate the post using these five dimensions.
+            Evaluate the post using these five dimensions.
 
-        1. Vagueness (0-20)
-        How vague are the claims?
-        0 = highly specific and concrete
-        20 = almost entirely vague
+            1. Vagueness (0-20)
+            How vague are the claims?
+            0 = highly specific and concrete
+            20 = almost entirely vague
 
-        2. Exaggeration (0-20)
-        How inflated or over-the-top is the language?
-        0 = neutral and proportional
-        20 = extreme hype and exaggeration
+            2. Exaggeration (0-20)
+            How inflated or over-the-top is the language?
+            0 = neutral and proportional
+            20 = extreme hype and exaggeration
 
-        3. Corporate jargon (0-20)
-        How much does the post rely on impressive-sounding but
-        low-information corporate language?
-        0 = clear, natural language
-        20 = heavily dependent on corporate buzzwords
+            3. Corporate jargon (0-20)
+            How much does the post rely on impressive-sounding but
+            low-information corporate language?
+            0 = clear, natural language
+            20 = heavily dependent on corporate buzzwords
 
-        4. Evidence gap (0-20)
-        How much are important claims unsupported by numbers,
-        examples, outcomes, or other concrete evidence?
-        0 = claims are well supported
-        20 = major claims have almost no supporting evidence
+            4. Evidence gap (0-20)
+            How much are important claims unsupported by numbers,
+            examples, outcomes, or other concrete evidence?
+            0 = claims are well supported
+            20 = major claims have almost no supporting evidence
 
-        5. Filler / self-congratulation (0-20)
-        How much of the post consists of emotional, inspirational,
-        or self-congratulatory language rather than useful information?
-        0 = almost no filler
-        20 = mostly filler
+            5. Filler / self-congratulation (0-20)
+            How much of the post consists of emotional, inspirational,
+            or self-congratulatory language rather than useful information?
+            0 = almost no filler
+            20 = mostly filler
 
-        The overall bullshit score MUST be the sum of the five
-        dimension scores and therefore range from 0 to 100.
+            The overall bullshit score MUST be the sum of the five
+            dimension scores and therefore range from 0 to 100.
 
-        Use these overall categories:
+            Use these overall categories:
 
-        0-20: Substantive
-        21-40: Mostly substantive
-        41-60: Mixed
-        61-80: High bullshit
-        81-100: Maximum LinkedIn
+            0-20: Substantive
+            21-40: Mostly substantive
+            41-60: Mixed
+            61-80: High bullshit
+            81-100: Maximum LinkedIn
 
-        Important:
-        Do not punish a post simply because it is positive or enthusiastic.
-        Concrete achievements supported by specific numbers, outcomes,
-        customers, examples, or evidence should reduce the bullshit score.
+            Important:
+            Do not punish a post simply because it is positive or enthusiastic.
+            Concrete achievements supported by specific numbers, outcomes,
+            customers, examples, or evidence should reduce the bullshit score.
 
-        Analyze the following LinkedIn post:
+            Analyze the following LinkedIn post:
 
-        {post}
-        """,
-        text_format=BullshitAnalysis,
-    )
+            {post}
+            """,
+            text_format=BullshitAnalysis,
+        )
+
+    except APIError as error:
+        print(f"\nOpenAI API error: {error}")
+        return None
 
     result = response.output_parsed
 
@@ -122,21 +128,24 @@ post = get_post_from_user()
 
 analysis = analyze_post(post)
 
+if analysis is None:
+    print("Unable to analyze the post. Please try again.")
 
-print(f"Score: {analysis.score}/100")
-print(f"Category: {analysis.category}")
+else:
+    print(f"Score: {analysis.score}/100")
+    print(f"Category: {analysis.category}")
+    
+    print("\nDimension scores:")
+    print(f"- Vagueness: {analysis.vagueness}/20")
+    print(f"- Exaggeration: {analysis.exaggeration}/20")
+    print(f"- Corporate jargon: {analysis.jargon}/20")
+    print(f"- Evidence gap: {analysis.evidence_gap}/20")
+    print(f"- Filler / self-congratulation: {analysis.filler}/20")
+    
+    print("\nReasons:")
+    for reason in analysis.reasons:
+        print(f"- {reason}")
 
-print("\nDimension scores:")
-print(f"- Vagueness: {analysis.vagueness}/20")
-print(f"- Exaggeration: {analysis.exaggeration}/20")
-print(f"- Corporate jargon: {analysis.jargon}/20")
-print(f"- Evidence gap: {analysis.evidence_gap}/20")
-print(f"- Filler / self-congratulation: {analysis.filler}/20")
-
-print("\nReasons:")
-for reason in analysis.reasons:
-    print(f"- {reason}")
-
-print("\nSuspicious phrases:")
-for phrase in analysis.suspicious_phrases:
-    print(f"- {phrase}")
+    print("\nSuspicious phrases:")
+    for phrase in analysis.suspicious_phrases:
+        print(f"- {phrase}")
