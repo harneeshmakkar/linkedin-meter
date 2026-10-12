@@ -19,7 +19,25 @@ class BullshitAnalysis(BaseModel):
     suspicious_phrases: list[str]
 
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def get_api_key():
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if api_key:
+        return api_key
+
+    try:
+        import streamlit as st
+        return st.secrets["OPENAI_API_KEY"]
+    except Exception as error:
+        raise RuntimeError(
+            "OPENAI_API_KEY is missing. Configure it in .env "
+            "locally or in Streamlit Cloud secrets."
+        ) from error
+
+
+client = OpenAI(api_key=get_api_key())
+
 
 
 def calculate_score(result: BullshitAnalysis) -> int:
