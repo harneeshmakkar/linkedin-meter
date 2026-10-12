@@ -1,7 +1,6 @@
 from analyzer import analyze_post
 from evaluation import evaluation_dataset
 
-from typing import Optional
 
 
 def calculate_range_distance(
@@ -17,23 +16,6 @@ def calculate_range_distance(
         return score - expected_max
 
     return 0
-
-
-def get_post_from_user() -> str:
-    print("Paste a LinkedIn post below.")
-    print("When finished, type DONE on a new line.\n")
-
-    lines = []
-
-    while True:
-        line = input()
-
-        if line.strip().upper() == "DONE":
-            break
-
-        lines.append(line)
-
-    return "\n".join(lines)
 
 
 
