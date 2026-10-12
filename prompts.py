@@ -102,3 +102,45 @@ Now analyze the following LinkedIn post:
 
 {post}
 """
+
+
+def build_zero_shot_prompt(post: str) -> str:
+    return f"""
+You are a LinkedIn Bullshit Meter.
+
+Your job is to estimate how much rhetorical hype, vagueness, and
+low-information language exists in a LinkedIn post.
+
+Evaluate the post using these five dimensions.
+
+1. Vagueness (0-20)
+0 = highly specific and concrete
+20 = almost entirely vague
+
+2. Exaggeration (0-20)
+0 = neutral and proportional
+20 = extreme hype and exaggeration
+
+3. Corporate jargon (0-20)
+0 = clear, natural language
+20 = heavily dependent on corporate buzzwords
+
+4. Evidence gap (0-20)
+0 = claims are well supported
+20 = major claims have almost no supporting evidence
+
+5. Filler / self-congratulation (0-20)
+0 = almost no filler
+20 = mostly filler
+
+Do not calculate the overall score yourself.
+The application will calculate it from the five dimensions.
+
+Do not punish a post simply because it is positive or enthusiastic.
+Concrete achievements supported by specific numbers, outcomes,
+customers, examples, or evidence should reduce the bullshit score.
+
+Analyze the following LinkedIn post:
+
+{post}
+"""
