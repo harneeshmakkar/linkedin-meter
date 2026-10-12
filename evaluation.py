@@ -1,52 +1,51 @@
 evaluation_dataset = [
     {
-        "name": "Concrete operational result",
+        "name": "Specific cost-saving result",
         "post": """
-        We reduced our customer support response time from 18 hours
-        to 4 hours over the last six months.
+        We changed our warehouse picking process in March.
 
-        We did this by introducing automated ticket routing and
-        restructuring our support workflow.
+        Average order processing time fell from 14 minutes to 9 minutes,
+        and picking errors decreased from 3.1% to 1.4% over the next
+        three months.
 
-        Customer satisfaction increased from 82% to 91%.
+        We achieved this by reorganizing high-volume inventory and
+        introducing barcode checks at two stages.
         """,
         "expected_min": 0,
-        "expected_max": 20
+        "expected_max": 20,
     },
+    
 
     {
-        "name": "Pure corporate hype",
+        "name": "Vague transformation announcement",
         "post": """
-        Today we are thrilled to announce a transformative milestone
-        in our mission to redefine the future of business.
+        Today marks a defining moment in our evolution.
 
-        Through relentless innovation and cross-functional collaboration,
-        we have unlocked a new era of operational excellence.
+        We are reimagining what's possible through bold thinking,
+        a relentless commitment to excellence, and a shared vision
+        for a better tomorrow.
 
-        Our platform is empowering organizations to move faster,
-        think bigger, and create unprecedented value at scale.
-
-        This is only the beginning.
+        Together, we are breaking barriers and unlocking new possibilities.
+        Stay tuned.
         """,
         "expected_min": 80,
-        "expected_max": 100
+        "expected_max": 100,
     },
 
     {
-        "name": "Evidence-based promotion",
+        "name": "Promotional post with measurable outcomes",
         "post": """
-        I'm proud to share that our team has launched our new analytics
-        platform after eight months of development.
+        Our new scheduling tool launched in April and is now used by
+        14 clinics.
 
-        The platform is now being used by 27 customers and has reduced
-        their weekly reporting time by an average of 35%.
+        In a six-week pilot, missed appointments fell by 18% compared
+        with the previous six weeks. The pilot was small, so we're
+        expanding it before drawing broader conclusions.
 
-        A big thank you to the engineering, product, and customer success
-        teams who made this possible. We're excited to keep improving it
-        based on customer feedback.
+        Thanks to the clinic teams who helped us test it.
         """,
         "expected_min": 0,
-        "expected_max": 25
+        "expected_max": 25,
     },
 
     {
@@ -162,4 +161,78 @@ evaluation_dataset = [
         "expected_min": 65,
         "expected_max": 95
     },
+
+    {
+        "name": "Positive but specific",
+        "post": """
+        Proud of what the team accomplished this quarter.
+
+        We shipped three major product updates, reduced average
+        onboarding time from 9 days to 5 days, and increased
+        weekly active users by 17%.
+
+        There is still plenty to improve, but the progress has been
+        encouraging.
+        """,
+        "expected_min": 0,
+        "expected_max": 25,
+    },
+
+    {
+        "name": "Positive but vague",
+        "post": """
+        What an incredible quarter for the team.
+
+        We pushed ourselves beyond our limits, embraced new challenges,
+        and created meaningful momentum across the organization.
+
+        I'm incredibly proud of what we've achieved together and
+        excited for everything that's ahead.
+        """,
+        "expected_min": 45,
+        "expected_max": 80,
+    },
+
+    {
+        "name": "Evidence plus hype",
+        "post": """
+        I'm thrilled to announce a truly transformational milestone
+        for our company.
+
+        Over the past year, our platform has helped 140 businesses
+        automate their reporting and collectively save an estimated
+        25,000 hours.
+
+        This is a groundbreaking step toward redefining how modern
+        organizations operate, and we're only getting started.
+        """,
+        "expected_min": 30,
+        "expected_max": 65,
+    },
+
+    {
+        "name": "Jargon with real numbers",
+        "post": """
+        We are excited to accelerate our digital transformation journey
+        through a more scalable, data-driven operating model.
+
+        Our new workflow reduced processing time by 32% and increased
+        team throughput by 21% during our three-month pilot.
+
+        We're now working on expanding the initiative across the business.
+        """,
+        "expected_min": 15,
+        "expected_max": 45,
+    },
+
+    {
+        "name": "Very short announcement",
+        "post": """
+        Excited to announce that we've launched something new.
+
+        More details coming soon!
+        """,
+        "expected_min": 35,
+        "expected_max": 75,
+    }
 ]

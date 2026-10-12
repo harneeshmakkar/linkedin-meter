@@ -64,12 +64,12 @@ def analyze_post(post: str):
 
     try:
 
-        prompt = build_analysis_prompt
+        prompt = build_analysis_prompt(post)
 
         response = client.responses.parse(
             model="gpt-5.6-luna",
             input=prompt,
-            text_format=BullshitAnalysis,
+            text_format=BullshitAnalysis
         )
 
     except APIError as error:
