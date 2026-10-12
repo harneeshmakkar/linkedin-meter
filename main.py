@@ -46,6 +46,20 @@ def calculate_category(score: int) -> str:
     else:
         return "Maximum LinkedIn"
 
+def calculate_range_distance(
+    score: int,
+    expected_min: int,
+    expected_max: int,
+) -> int:
+
+    if score < expected_min:
+        return expected_min - score
+
+    if score > expected_max:
+        return score - expected_max
+
+    return 0
+
 def analyze_post(post: str):
 
     try:
@@ -89,6 +103,7 @@ def get_post_from_user() -> str:
 
 passed_count = 0
 failed_count = 0
+total_distance = 0
 
 for test in evaluation_dataset:
     analysis = analyze_post(test["post"])
@@ -107,6 +122,14 @@ for test in evaluation_dataset:
         <= test["expected_max"]
     )
 
+    distance = calculate_range_distance(
+        score,
+        test["expected_min"],
+        test["expected_max"],
+    )
+
+    total_distance += distance
+
     print("\n" + "=" * 60)
     print(f"Test: {test['name']}")
     print(f"Actual score: {score}/100")
@@ -115,6 +138,7 @@ for test in evaluation_dataset:
         f"{test['expected_min']}-{test['expected_max']}"
     )
     print(f"Category: {category}")
+    print(f"Distance from expected range: {distance}")
 
     if passed:
         print("Result: PASS")
@@ -126,6 +150,7 @@ for test in evaluation_dataset:
 
 total_tests = passed_count + failed_count
 pass_rate = (passed_count / total_tests) * 100
+average_distance = total_distance / total_tests
 
 print("\n" + "=" * 60)
 print("Evaluation Summary")
@@ -133,3 +158,4 @@ print(f"Total tests: {total_tests}")
 print(f"Passed: {passed_count}")
 print(f"Failed: {failed_count}")
 print(f"Pass rate: {pass_rate:.1f}%")
+print(f"Average distance from expected range: {average_distance:.1f}")
