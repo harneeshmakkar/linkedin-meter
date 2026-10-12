@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-from openai import OpenAI, APIError
+from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, Field
 
 from prompts import build_analysis_prompt
@@ -48,20 +48,23 @@ def calculate_category(score: int) -> str:
 def analyze_post(post: str):
 
     try:
-
         prompt = build_analysis_prompt(post)
 
         response = client.responses.parse(
             model="gpt-5.6-luna",
             input=prompt,
-            text_format=BullshitAnalysis
+            text_format=BullshitAnalysis,
         )
 
-    except APIError as error:
-        print(f"\nOpenAI API error: {error}")
+    except OpenAIError as error:
+        print(f"\nOpenAI request failed: {error}")
         return None
 
     result = response.output_parsed
+
+    if result is None:
+        print("\nOpenAI returned no parsed analysis.")
+        return None
 
     score = calculate_score(result)
     category = calculate_category(score)

@@ -25,19 +25,31 @@ st.caption(
 post = st.text_area(
     "Your LinkedIn post",
     height=250,
+    max_chars=10000,
     placeholder="Paste the entire LinkedIn post here...",
 )
+
 
 if st.button("Analyze post", type="primary"):
     if not post.strip():
         st.warning("Please paste a LinkedIn post first.")
+
+    elif len(post) > 10000:
+        st.warning(
+            "This post is too long. Please keep it under "
+            "10,000 characters."
+        )
 
     else:
         with st.spinner("Analyzing your post..."):
             analysis = analyze_post(post)
 
         if analysis is None:
-            st.error("Analysis failed. Please try again.")
+            st.error(
+                "Analysis failed. Please try again. "
+                "If the problem persists, check the terminal "
+                "for the error details."
+            )
 
         else:
             result, score, category = analysis
